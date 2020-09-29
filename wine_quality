@@ -1,0 +1,49 @@
+url = 'https://raw.githubusercontent.com/JayRay1987/MLwR/master/Machine%20Learning%20with%20R%20(3rd%20Ed.)/Chapter06/whitewines.csv'
+whitewines <- read.csv(url)
+#check the structure of the white wines csv
+str(whitewines)
+#histogram of whitewines data frame
+hist(whitewines$quality)
+#create train and test data sets
+wine_train <- whitewines[1:3750,]
+wine_test <- whitewines[3751:4898,]
+#create regression model
+install.packages("rpart")
+library(rpart)
+?rpart.control
+m.rpart <- rpart(quality ~., data = wine_train)
+m.rpart
+#leaf nodes are represented by *
+install.packages("rpart.plot")
+library(rpart.plot)
+#graph
+rpart.plot(m.rpart, digits = 3)
+#better looking graph
+rpart.plot(m.rpart, digits = 4, fallen.leaves = TRUE, type = 3, extra = 101)
+#make predictions
+p.rpart <- predict(m.rpart, wine_test)
+#summary of predictions
+summary(p.rpart)
+summary(wine_test$quality)
+#differences in the minimum and maximums - the outliers.
+#Q1 to Q3 seem to be pretty similar.
+#use the correlation between predicted and actual quality values to gauge
+#model's performance
+cor(p.rpart, wine_test$quality)
+#0.53 correlation between predicted and true values.
+MAE <- function(actual, predicted) {
+  mean(abs(actual - predicted))
+}
+MAE(p.rpart, wine_test$quality)
+#so on average the difference between the model's predictions and the true quality
+#score was about 0.59. Quality scale is from 0 to 10, so that is pretty good.
+#test against the mean quality rating
+mean_quality <- mean(wine_train$quality)
+MAE(mean_quality, wine_test$quality)
+#absolute error for the mean quality rating is 0.67
+#improve the model performance
+install.packages("RWeka")
+library(RWeka)
+m.m5p <- M5P(quality ~ ., data = wine_train)
+m.m5p
+summary(m.m5p)
